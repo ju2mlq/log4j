@@ -31,6 +31,7 @@ import java.util.Locale;
 
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.RotateFileListener;
 
 /**
    DailyRollingFileAppender extends {@link FileAppender} so that the
@@ -186,6 +187,8 @@ public class DailyRollingFileAppender extends FileAppender {
   // The gmtTimeZone is used only in computeCheckPeriod() method.
   static final TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");
 
+  private RotateFileListener runner = null;
+
 
   /**
      The default constructor does nothing. */
@@ -328,6 +331,9 @@ public class DailyRollingFileAppender extends FileAppender {
     boolean result = file.renameTo(target);
     if(result) {
       LogLog.debug(fileName +" -> "+ scheduledFilename);
+      if(this.runner != null) {
+        this.runner.postFile(target);
+      }
     } else {
       LogLog.error("Failed to rename ["+fileName+"] to ["+scheduledFilename+"].");
     }
@@ -368,6 +374,10 @@ public class DailyRollingFileAppender extends FileAppender {
     }
     super.subAppend(event);
    }
+
+  public void setRunner(RotateFileListener r) {
+    this.runner = r;
+  }
 }
 
 /**
@@ -451,4 +461,5 @@ class RollingCalendar extends GregorianCalendar {
     }
     return getTime();
   }
+
 }
